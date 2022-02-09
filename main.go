@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/ARF-DEV/BE_Test/controller"
 	"github.com/ARF-DEV/BE_Test/database"
@@ -9,12 +10,18 @@ import (
 )
 
 func HandleRequest() {
+	dir := "/static/"
+	os.Mkdir(dir, 0777)
 	router := mux.NewRouter()
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	router.HandleFunc("/api/product/all", controller.GetAllProducts)
 	router.HandleFunc("/api/product/id", controller.GetProductByID)
+	router.HandleFunc("/api/product/delete/all", controller.DeleteAllProduct)
+	router.HandleFunc("/api/product/delete/id", controller.DeleteProductByID)
+	router.HandleFunc("/api/product/create", controller.CreateProduct).Methods("POST")
+	router.HandleFunc("/api/product/update/id", controller.UpdateProductByID).Methods("PUT")
 
 	//dunno what happen here (especially the http.StripPrefix)
-	router.PathPrefix("/file/").Handler(http.StripPrefix("/file/", http.FileServer(http.Dir("./static"))))
 
 	http.ListenAndServe(":5000", router)
 }

@@ -11,7 +11,7 @@ type Product struct {
 	Stock         bool
 	Price         int
 	Price_type    int
-	ProductImages []ProductImage
+	ProductImages []ProductImage `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Status        bool
 	CategoryID    int
 	Category      Category
