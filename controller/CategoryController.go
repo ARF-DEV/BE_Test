@@ -145,7 +145,7 @@ func DeleteCategoryByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	database.DB.Model(&models.Product{}).Where("category_id = ?", targetCategory).Update("category_id", nil)
+	database.DB.Model(&models.Product{}).Where("category_id = ?", targetCategory.ID).Update("category_id", nil)
 
 	err = database.DB.Delete(&categoryFound, targetCategory.ID).Error
 	if err != nil {
