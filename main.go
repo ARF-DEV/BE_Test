@@ -13,6 +13,7 @@ func HandleRequest() {
 	dir := "/static/"
 	os.Mkdir(dir, 0777)
 	router := mux.NewRouter()
+	//still dunno what's http.StripPrefix do
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	router.HandleFunc("/api/product/all", controller.GetAllProducts).Methods("GET")
 	router.HandleFunc("/api/product/id", controller.GetProductByID).Methods("GET")
@@ -28,8 +29,6 @@ func HandleRequest() {
 	router.HandleFunc("/api/category/delete/id", controller.DeleteCategoryByID).Methods("DELETE")
 	router.HandleFunc("/api/category/create", controller.CreateCategory).Methods("POST")
 	router.HandleFunc("/api/category/update/id", controller.UpdateCategoryByID).Methods("PUT")
-
-	//dunno what happen here (especially the http.StripPrefix)
 
 	http.ListenAndServe(":5000", router)
 }
