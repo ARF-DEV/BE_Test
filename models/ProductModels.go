@@ -5,7 +5,7 @@ import (
 )
 
 type Product struct {
-	ID            int
+	ID            int `gorm:"primarykey"`
 	Name          string
 	Description   string
 	Stock         bool
@@ -13,8 +13,8 @@ type Product struct {
 	Price_type    int
 	ProductImages []ProductImage `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Status        bool
-	CategoryID    int
-	Category      Category
+	CategoryID    *int
+	Category      Category `gorm:"constraint:OnUpdate:CASCADE,ONDELETE:SET NULL;"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }

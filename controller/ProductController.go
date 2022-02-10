@@ -55,6 +55,7 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 	responseBody, err := json.Marshal(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -63,6 +64,35 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func GetProductByCategoryID(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var requestedCategory models.Category
+	json.Unmarshal(body, &requestedCategory)
+
+	var products []models.Product
+	err = database.DB.Preload("ProductImages").Where("category_id = ?", requestedCategory.ID).Find(&products).Error
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	responseBody, err := json.Marshal(products)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseBody)
+}
 func DeleteProductByID(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 
@@ -129,12 +159,17 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	body := r.FormValue("data")
 	var requestBodyMap map[string]interface{}
-	json.Unmarshal([]byte(body), &requestBodyMap)
+	err = json.Unmarshal([]byte(body), &requestBodyMap)
 
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	var requestedCategory models.Category
 	database.DB.First(&requestedCategory, &models.Category{Name: requestBodyMap["CategoryName"].(string)})
 
@@ -157,6 +192,7 @@ func UpdateProductByID(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	body := r.FormValue("data")
 
@@ -168,8 +204,11 @@ func UpdateProductByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var updateProduct models.Product
-	json.Unmarshal([]byte(body), &updateProduct)
-
+	err = json.Unmarshal([]byte(body), &updateProduct)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	var oldProduct models.Product
 	err = database.DB.Preload("ProductImages").First(&oldProduct, &models.Product{ID: updateProduct.ID}).Error
 	if err != nil {
@@ -177,27 +216,27 @@ func UpdateProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var isUpdated = false
-	if updateProduct.Name != "" && updateProduct.Name != oldProduct.Name {
+	if updateProduct.Name != oldProduct.Name {
 		oldProduct.Name = updateProduct.Name
 		isUpdated = true
 	}
-	if updateProduct.Description != "" && updateProduct.Description != oldProduct.Description {
+	if updateProduct.Description != oldProduct.Description {
 		oldProduct.Description = updateProduct.Description
 		isUpdated = true
 	}
-	if updateProduct.Stock != false && updateProduct.Stock != oldProduct.Stock {
+	if updateProduct.Stock != oldProduct.Stock {
 		oldProduct.Stock = updateProduct.Stock
 		isUpdated = true
 	}
-	if updateProduct.Price != 0 && updateProduct.Price != oldProduct.Price {
+	if updateProduct.Price != oldProduct.Price {
 		oldProduct.Price = updateProduct.Price
 		isUpdated = true
 	}
-	if updateProduct.Price_type != 0 && updateProduct.Price_type != oldProduct.Price_type {
+	if updateProduct.Price_type != oldProduct.Price_type {
 		oldProduct.Price_type = updateProduct.Price_type
 		isUpdated = true
 	}
-	if updateProduct.Status != false && updateProduct.Status != oldProduct.Status {
+	if updateProduct.Status != oldProduct.Status {
 		oldProduct.Status = updateProduct.Status
 		isUpdated = true
 	}
@@ -212,6 +251,7 @@ func UpdateProductByID(w http.ResponseWriter, r *http.Request) {
 		}
 		database.DB.Where("product_id = ?", oldProduct.ID).Delete(&models.ProductImage{})
 		oldProduct.ProductImages = newImages
+		isUpdated = true
 	}
 
 	if (oldCategory == models.Category{}) && (updateProduct.Category != oldProduct.Category) {
@@ -219,7 +259,7 @@ func UpdateProductByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isUpdated {
-		oldProduct.UpdatedAt = updateProduct.UpdatedAt
+		oldProduct.UpdatedAt = updateProduct.CreatedAt
 	}
 
 	database.DB.Save(&oldProduct)

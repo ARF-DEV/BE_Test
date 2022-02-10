@@ -11,9 +11,9 @@ import (
 
 var DB *gorm.DB
 
-func Setup(db *gorm.DB) {
-	db.AutoMigrate(&models.Product{}, &models.Category{}, &models.ProductImage{})
-	helpers.Seed(db)
+func Setup() {
+	DB.AutoMigrate(&models.Product{}, &models.Category{}, &models.ProductImage{})
+	helpers.Seed(DB)
 }
 
 func InitDB() {
@@ -24,5 +24,5 @@ func InitDB() {
 	}
 	fmt.Println("connected to DB")
 
-	Setup(DB)
+	Setup()
 }
