@@ -17,7 +17,7 @@ import (
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	var products []models.Product
 
-	database.DB.Preload("ProductImages").Find(&products)
+	database.DB.Preload("ProductImages").Preload("Category").Find(&products)
 
 	jsonResponse, err := json.Marshal(products)
 
@@ -46,7 +46,7 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var product models.Product
-	err = database.DB.Preload("ProductImages").Find(&product, requestBody.ID).Error
+	err = database.DB.Preload("ProductImages").Preload("Category").Find(&product, requestBody.ID).Error
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -75,7 +75,7 @@ func GetProductByCategoryID(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &requestedCategory)
 
 	var products []models.Product
-	err = database.DB.Preload("ProductImages").Where("category_id = ?", requestedCategory.ID).Find(&products).Error
+	err = database.DB.Preload("ProductImages").Preload("Category").Where("category_id = ?", requestedCategory.ID).Find(&products).Error
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

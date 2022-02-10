@@ -9,6 +9,7 @@ func Seed(db *gorm.DB) {
 
 	cat := []models.Category{
 		{Name: "Sayuran", Status: true, Image: "images/popo.png"},
+		{Name: "Buah", Status: true, Image: "images/snek.png"},
 	}
 
 	for _, item := range cat {
@@ -18,6 +19,9 @@ func Seed(db *gorm.DB) {
 	var sayuran models.Category
 
 	db.First(&sayuran, "Name = ?", "Sayuran")
+
+	var buah models.Category
+	db.First(&buah, "Name = ?", "Buah")
 
 	products := []models.Product{
 		{
@@ -33,6 +37,13 @@ func Seed(db *gorm.DB) {
 				{ImagePath: "images/Kentang1.png"},
 				{ImagePath: "images/Kentang2.png"}},
 			Status: true, Category: sayuran,
+		},
+		{
+			Name: "Apple", Description: "Ini Apple", Stock: true, Price: 10000,
+			Price_type: 500, ProductImages: []models.ProductImage{
+				{ImagePath: "images/Apple1.png"},
+				{ImagePath: "images/Apple2.png"}},
+			Status: true, Category: buah,
 		},
 	}
 	for _, item := range products {
